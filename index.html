@@ -23,50 +23,95 @@
                             yellow: '#FBBC05',
                             green: '#34A853',
                         }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar for a sleeker look */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #4285F4; border-radius: 4px; }
         
+        body {
+            cursor: none; /* Hide default cursor for custom one */
+            overflow-x: hidden;
+        }
+
+        /* Interactive Canvas Background */
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+        .dark #particle-canvas { opacity: 0.6; }
+
+        /* Custom Cursor */
+        .cursor-dot, .cursor-outline {
+            position: fixed;
+            top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .cursor-dot {
+            width: 8px; height: 8px;
+            background-color: #4285F4;
+        }
+        .cursor-outline {
+            width: 40px; height: 40px;
+            border: 2px solid rgba(66, 133, 244, 0.5);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        .cursor-hover {
+            width: 60px; height: 60px;
+            background-color: rgba(66, 133, 244, 0.1);
+            border-color: #4285F4;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Glassmorphism & Glitch Navigation */
         .glass-nav {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
         .dark .glass-nav {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.7);
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .toc-link.active {
             color: #4285F4;
-            font-weight: 600;
+            font-weight: 700;
             border-left-color: #4285F4;
+            transform: translateX(8px);
         }
+        .toc-link { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 
         .gradient-text {
             background: linear-gradient(135deg, #4285F4, #EA4335, #FBBC05, #34A853);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-size: 300% 300%;
-            animation: gradientMove 8s ease infinite;
+            animation: gradientMove 6s ease infinite;
         }
 
         @keyframes gradientMove {
@@ -75,33 +120,112 @@
             100% { background-position: 0% 50%; }
         }
 
-        #progress-bar {
-            transform-origin: 0% 50%;
-            transform: scaleX(0);
-            transition: transform 0.1s ease-out;
+        /* 3D Tilt & Glow Cards */
+        .tilt-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+            transition: transform 0.1s;
+            position: relative;
+        }
+        .tilt-card-content {
+            transform: translateZ(30px); /* Pops content out */
+        }
+        /* Mouse tracking glow */
+        .glow-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(66, 133, 244, 0.15) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: inherit;
+        }
+        .tilt-card:hover .glow-overlay { opacity: 1; }
+
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Circuit line effect for timeline */
+        .circuit-line::before {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0; left: 19px;
+            width: 2px;
+            background: linear-gradient(to bottom, #4285F4, #EA4335, #FBBC05, #34A853);
+            background-size: 100% 200%;
+            animation: flowDown 3s linear infinite;
+        }
+        @media (min-width: 768px) {
+            .circuit-line::before { left: 50%; transform: translateX(-50%); }
+        }
+        @keyframes flowDown {
+            0% { background-position: 0% -100%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        /* Typewriter cursor */
+        .typewriter-cursor {
+            display: inline-block;
+            width: 4px;
+            height: 1.2em;
+            background-color: #4285F4;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Cyber Glitch Hover for specific words */
+        .glitch-hover:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            color: #EA4335;
+        }
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-300 font-sans selection:bg-google-blue selection:text-white">
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-500 font-sans selection:bg-google-blue selection:text-white">
+
+    <!-- Interactive Background Canvas -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-outline" id="cursor-outline"></div>
 
     <!-- Reading Progress Bar -->
-    <div class="fixed top-0 left-0 w-full h-1 z-50 bg-slate-200 dark:bg-slate-800">
-        <div id="progress-bar" class="h-full bg-google-blue"></div>
+    <div class="fixed top-0 left-0 w-full h-1 z-50 bg-slate-200/50 dark:bg-slate-800/50">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-google-blue via-google-red to-google-green origin-left transform scale-x-0 transition-transform duration-100 ease-out"></div>
     </div>
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full z-40 glass-nav transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2 font-bold text-xl tracking-tight">
-                    <i data-lucide="compass" class="text-google-blue"></i>
+                <div class="flex items-center gap-2 font-bold text-xl tracking-tight interactive-el">
+                    <i data-lucide="hexagon" class="text-google-blue animate-spin-slow" style="animation-duration: 10s;"></i>
                     <span>Career<span class="text-google-blue">Blueprint</span></span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <a href="https://github.com" target="_blank" class="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <a href="#" class="interactive-el text-slate-500 hover:text-google-blue transition-colors relative group">
                         <i data-lucide="github" class="w-5 h-5"></i>
+                        <span class="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs bg-slate-800 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">View Source</span>
                     </a>
-                    <button id="theme-toggle" class="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button id="theme-toggle" class="interactive-el p-2 rounded-full bg-slate-200/50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 hover:text-google-yellow hover:shadow-[0_0_15px_rgba(251,188,5,0.5)] transition-all">
                         <i data-lucide="moon" class="w-5 h-5 dark:hidden"></i>
                         <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
                     </button>
@@ -111,399 +235,321 @@
     </nav>
 
     <!-- Hero Section -->
-    <header class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
-        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-google-blue/10 dark:bg-google-blue/5 blur-3xl pointer-events-none"></div>
-        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-google-red/10 dark:bg-google-red/5 blur-3xl pointer-events-none"></div>
+    <header class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden flex flex-col items-center text-center">
+        <!-- Decorative glowing orbs -->
+        <div class="absolute top-10 left-10 w-72 h-72 rounded-full bg-google-blue/20 dark:bg-google-blue/10 blur-[100px] animate-float pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-google-red/20 dark:bg-google-red/10 blur-[100px] animate-float pointer-events-none" style="animation-delay: 2s;"></div>
         
-        <div class="relative z-10 max-w-4xl">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-semibold mb-6">
-                <i data-lucide="calendar" class="w-4 h-4"></i> 2026 - 2030 Vision
+        <div class="relative z-10 max-w-4xl mt-10">
+            <div class="interactive-el inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 shadow-lg text-sm font-semibold mb-8 backdrop-blur-md hover:scale-105 transition-transform cursor-pointer group">
+                <i data-lucide="radar" class="w-4 h-4 text-google-red group-hover:animate-ping"></i>
+                <span class="bg-gradient-to-r from-google-blue to-google-green -webkit-background-clip-text text-transparent bg-clip-text">2026 - 2030 Vision Unlocked</span>
             </div>
-            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight mb-6">
+            
+            <h1 class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6">
                 Strategic Career Blueprint: <br>
-                Navigating the <span class="gradient-text">Google Ecosystem</span> for Online BCA Graduates
+                <span id="typewriter-text" class="gradient-text"></span><span class="typewriter-cursor"></span>
             </h1>
-            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-3xl leading-relaxed">
-                A definitive, macro-economic, and highly technical roadmap to transition from an online BCA graduate to a globally competitive Software Engineer at Google.
+            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-3xl mx-auto leading-relaxed reveal">
+                A definitive, macro-economic, and highly technical roadmap to transition from an online BCA graduate to a globally competitive <span class="font-bold text-slate-900 dark:text-white glitch-hover cursor-crosshair">Software Engineer</span> at Google.
             </p>
+
+            <div class="mt-10 reveal" style="transition-delay: 0.3s;">
+                <a href="#macroeconomic" class="interactive-el inline-flex items-center gap-2 px-8 py-4 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold hover:shadow-[0_0_30px_rgba(66,133,244,0.4)] hover:-translate-y-1 transition-all">
+                    Initialize Sequence <i data-lucide="arrow-down" class="w-5 h-5 animate-bounce"></i>
+                </a>
+            </div>
         </div>
     </header>
 
     <!-- Main Content Layout -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 flex flex-col lg:flex-row gap-12 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 flex flex-col lg:flex-row gap-12 relative z-10">
         
         <!-- Sticky Sidebar (Table of Contents) -->
         <aside class="hidden lg:block w-72 shrink-0">
-            <div class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-4">Contents</h3>
-                <nav class="flex flex-col space-y-2 text-sm" id="toc">
-                    <a href="#macroeconomic" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Macroeconomic Paradigm</a>
-                    <a href="#credential" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">The Credential Landscape</a>
-                    <a href="#roles" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">High-Trajectory Roles</a>
-                    <a href="#roadmap" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Four-Year Roadmap</a>
-                    <a href="#proof-of-work" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Elite Proof-of-Work</a>
-                    <a href="#entry-pathways" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Entry Pathways & Interviews</a>
-                    <a href="#networking" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Networking & Referrals</a>
-                    <a href="#synthesis" class="toc-link border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue dark:hover:text-google-blue transition-colors">Final Recommendations</a>
+            <div class="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 glass-nav rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-lg">
+                <h3 class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6">
+                    <i data-lucide="cpu" class="w-4 h-4"></i> System Modules
+                </h3>
+                <nav class="flex flex-col space-y-3 text-sm font-medium" id="toc">
+                    <a href="#macroeconomic" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">1. Macroeconomic Paradigm</a>
+                    <a href="#credential" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">2. Credential Landscape</a>
+                    <a href="#roles" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">3. High-Trajectory Roles</a>
+                    <a href="#roadmap" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">4. Four-Year Roadmap</a>
+                    <a href="#proof-of-work" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">5. Elite Proof-of-Work</a>
+                    <a href="#entry-pathways" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">6. Entry Pathways</a>
+                    <a href="#networking" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">7. Network Ecosystem</a>
+                    <a href="#synthesis" class="toc-link interactive-el border-l-2 border-transparent pl-3 py-1 text-slate-600 dark:text-slate-400 hover:text-google-blue transition-all">8. Final Synthesis</a>
                 </nav>
             </div>
         </aside>
 
         <!-- Content Area -->
-        <main class="flex-1 min-w-0 article-content space-y-16">
+        <main class="flex-1 min-w-0 article-content space-y-24">
             
             <!-- Section 1 -->
-            <section id="macroeconomic" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-blue/10 dark:bg-google-blue/20 rounded-lg text-google-blue">
-                        <i data-lucide="globe" class="w-6 h-6"></i>
+            <section id="macroeconomic" class="scroll-mt-32 reveal">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 bg-gradient-to-br from-google-blue to-blue-600 rounded-xl text-white shadow-[0_0_20px_rgba(66,133,244,0.3)] animate-float">
+                        <i data-lucide="globe" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl font-bold">The Macroeconomic and Technological Paradigm of Google (2026-2030)</h2>
+                    <h2 class="text-3xl sm:text-4xl font-bold">The Macroeconomic Paradigm</h2>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed space-y-6">
-                    <p>The global technology ecosystem is currently undergoing a structural and irreversible transformation, driven by the rapid maturation of generative artificial intelligence, the exponential scaling of cloud infrastructure, and the nascent commercialization of quantum computing. By 2030, the architectural foundations of enterprise technology will be entirely redefined. Analysis of Google's strategic investments indicates a fundamental pivot at the corporate level: the traditional search engine paradigm is rapidly evolving into a ubiquitous, autonomous digital assistant, while the company's core advertising and commerce engines are becoming entirely AI-driven ecosystems. Furthermore, Google is aggressively positioning its cloud infrastructure to become the global bedrock for artificial intelligence deployment, integrating proprietary hardware solutions such as Tensor Processing Units (TPUs) with highly optimized software stacks to serve global enterprise demands.</p>
-                    <p>The financial data underscores the magnitude of this shift. As articulated during Alphabet's fourth-quarter earnings call for fiscal 2025, annual revenues surpassed $400 billion, with Google Cloud accelerating to 48% growth and an annual run rate exceeding $70 billion. This growth is fundamentally fueled by strategic AI infrastructure investments and vertical integration, where the company's unrivaled hardware infrastructure serves as the bedrock for the Gemini AI stack. Consequently, the human capital requirements for the period between 2026 and 2030 are dictated by this vertical integration. The demand for traditional, syntax-focused programmers is depreciating as AI-assisted coding becomes the enterprise standard. By 2030, artificial intelligence agents will generate the majority of boilerplate code, shifting the human engineering mandate toward high-level system architecture, automated infrastructure oversight, and complex algorithmic problem-solving.</p>
-                    <p>Simultaneously, the quantum computing frontier is emerging as a critical, highly competitive domain. Strategic corporate and state-backed investments are heavily skewed toward quantum information science and technology (QIST), encompassing five primary areas: quantum computing and quantum-centric supercomputing, quantum communication, quantum sensing, quantum materials, and quantum artificial intelligence integrated within quantum data centers. While theoretical breakthroughs in quantum physics remain vital, technology conglomerates like Google require engineering talent capable of translating quantum mechanics into practical, applied technical solutions. The convergence of Artificial Intelligence, Cloud Computing, and Quantum Technology forms the exact nexus where future job opportunities will proliferate over the next half-decade, requiring a workforce equipped with deep cross-disciplinary expertise rather than highly siloed programming capabilities.</p>
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+                    <p>The global technology ecosystem is currently undergoing a structural and irreversible transformation, driven by the rapid maturation of <span class="font-semibold text-google-blue glitch-hover">generative artificial intelligence</span>, the exponential scaling of cloud infrastructure, and the nascent commercialization of quantum computing. By 2030, the architectural foundations of enterprise technology will be entirely redefined.</p>
+                    <p>Analysis of Google's strategic investments indicates a fundamental pivot at the corporate level: the traditional search engine paradigm is rapidly evolving into a ubiquitous, autonomous digital assistant. Google is aggressively positioning its cloud infrastructure to become the global bedrock for AI deployment, integrating proprietary hardware solutions such as <strong class="text-google-red glitch-hover">Tensor Processing Units (TPUs)</strong>.</p>
+                    <div class="my-8 p-6 bg-slate-100 dark:bg-slate-800 rounded-2xl border-l-4 border-google-yellow interactive-el hover:scale-[1.02] transition-transform">
+                        <h4 class="flex items-center gap-2 font-bold text-slate-900 dark:text-white mb-2"><i data-lucide="trending-up" class="w-5 h-5 text-google-yellow"></i> Market Shift 2026</h4>
+                        <p class="m-0 text-sm">The demand for traditional, syntax-focused programmers is depreciating. By 2030, AI agents will generate boilerplate code, shifting the human mandate toward high-level system architecture, automated infrastructure oversight, and complex algorithmic problem-solving.</p>
+                    </div>
                 </div>
             </section>
 
             <!-- Section 2 -->
-            <section id="credential" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-red/10 dark:bg-google-red/20 rounded-lg text-google-red">
-                        <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+            <section id="credential" class="scroll-mt-32 reveal">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 bg-gradient-to-br from-google-red to-red-600 rounded-xl text-white shadow-[0_0_20px_rgba(234,67,53,0.3)] animate-float" style="animation-delay: 0.5s;">
+                        <i data-lucide="graduation-cap" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl font-bold">The Evolving Credential Landscape: The Efficacy of an Online BCA Degree</h2>
+                    <h2 class="text-3xl sm:text-4xl font-bold">The Credential Landscape</h2>
                 </div>
-                <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed space-y-6">
-                    <p>Historically, securing a software engineering role at a top-tier technology conglomerate required an elite academic pedigree, typically a four-year Bachelor of Technology (B.Tech) in Computer Science from a premier, globally recognized institution. However, the hiring metrics established by 2026 reflect a radical democratization of the global technology labor market. Data provided by the Burning Glass Institute confirms a steady, precipitous decline in strict degree requirements at Google, dropping from 93% of job listings in 2017 to 77% by 2022, a trend that has accelerated exponentially through the mid-2020s. Google's co-founder, Sergey Brin, has explicitly reinforced this cultural and operational shift, noting that the company aggressively recruits individuals from non-traditional backgrounds who demonstrate the innate ability to independently master complex technological paradigms.</p>
-                    <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-6 rounded-r-xl my-8">
-                        <h4 class="font-bold text-blue-900 dark:text-blue-100 mb-2">The UGC Mandate & The Online BCA</h4>
-                        <p class="text-blue-800 dark:text-blue-200 m-0">For a candidate holding a Bachelor of Computer Applications (BCA) obtained via an online modality, this macroeconomic shift presents an unprecedented entry opportunity. Regulatory frameworks in India, specifically the University Grants Commission (UGC) guidelines, legally mandate that all UGC-entitled online degrees hold exact parity and market validity with their traditional, on-campus counterparts. Consequently, an online BCA is not an administrative or legal barrier to entry at Google India or its global subsidiaries.</p>
+                <div class="bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+                    <p>Historically, securing a software engineering role required an elite academic pedigree (a four-year B.Tech). However, hiring metrics reflect a radical democratization. Strict degree requirements at Google dropped from 93% in 2017 to 77% by 2022, a trend accelerating exponentially.</p>
+                    
+                    <div class="relative overflow-hidden bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800 p-8 rounded-2xl my-8 interactive-el group">
+                        <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                        <h4 class="font-bold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2 text-xl">
+                            <i data-lucide="check-circle" class="w-6 h-6"></i> The Online BCA Advantage
+                        </h4>
+                        <p class="text-blue-800 dark:text-blue-200 m-0">Regulatory frameworks in India (UGC guidelines) legally mandate that all UGC-entitled online degrees hold <strong>exact parity</strong> with traditional on-campus counterparts. An online BCA is not an administrative barrier to entry at Google India.</p>
                     </div>
-                    <p>The technology sector increasingly views BCA graduates as highly capable generalists who possess a strong foundation in programming, networking, and databases, making them highly adaptable to rapid deployment in fast-paced, agile engineering teams. The expedited three-year timeline of a BCA allows graduates to enter the workforce or begin intensive skill acquisition earlier than their four-year B.Tech peers, providing a distinct temporal advantage in a rapidly evolving market.</p>
-                    <p>However, the absence of an elite institutional brand necessitates that the candidate manufacture their own unassailable competency signals. While a BCA provides the foundational bedrock, the industry frequently debates the necessity of a Master of Computer Applications (MCA). Employers often prioritize postgraduate qualifications for specialized, high-paying roles in artificial intelligence and cloud architecture, as the MCA curriculum typically covers advanced algorithmic design, deep database management, and research-oriented skills that mirror industry demands. Despite this prevailing trend, an MCA is not a strict, non-negotiable prerequisite for securing a role at Google. Industry consensus, particularly within developer communities, indicates that exceptional demonstrable skills, highly advanced technical portfolios, and "Forward Applications and Projects" (FAP) can entirely offset the absence of a master's degree. The ultimate determinant of success in the 2026 hiring cycle is the accumulation of demonstrable, market-relevant proof-of-work, validated through platforms like GitHub, CodeChef, and LeetCode, rather than the mere accumulation of academic credentials.</p>
+
+                    <p>The ultimate determinant of success in the 2026 hiring cycle is the accumulation of demonstrable, market-relevant <span class="border-b-2 border-google-green cursor-help glitch-hover" title="GitHub, CodeChef, Portfolios">proof-of-work</span> rather than the mere accumulation of academic credentials like an MCA.</p>
                 </div>
             </section>
 
             <!-- Section 3 -->
-            <section id="roles" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-yellow/10 dark:bg-google-yellow/20 rounded-lg text-yellow-600 dark:text-google-yellow">
-                        <i data-lucide="target" class="w-6 h-6"></i>
+            <section id="roles" class="scroll-mt-32 reveal">
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="p-3 bg-gradient-to-br from-google-yellow to-yellow-600 rounded-xl text-white shadow-[0_0_20px_rgba(251,188,5,0.3)] animate-float" style="animation-delay: 1s;">
+                        <i data-lucide="target" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl font-bold">High-Trajectory Engineering Roles at Google (2026-2030)</h2>
+                    <h2 class="text-3xl sm:text-4xl font-bold">High-Trajectory Engineering Roles</h2>
                 </div>
-                <p class="text-slate-600 dark:text-slate-400 mb-8">To establish a highly targeted, efficient preparation roadmap, it is imperative to identify the specific engineering roles that Google will aggressively hire for over the next four years. These roles transcend legacy full-stack web development and require a profound understanding of autonomous systems, hardware-software integration, cloud-native deployments, and scalable security infrastructure.</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                    <!-- Role Card 1 -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-4">
-                            <i data-lucide="bot" class="w-6 h-6"></i>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <!-- Interactive 3D Card 1 -->
+                    <div class="tilt-card interactive-el bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-xl cursor-crosshair">
+                        <div class="glow-overlay"></div>
+                        <div class="tilt-card-content relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400 mb-6 shadow-inner">
+                                <i data-lucide="bot" class="w-7 h-7"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Agentic AI Engineer</h3>
+                            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Designs multi-step, autonomous workflows where AI agents interact with APIs with minimal human intervention. Expertise required in LLMs, NLP, and multi-modal architectures.</p>
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">LangGraph</span>
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">Gemini API</span>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">Agentic AI Engineer</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400">The transition from reactive generative AI to proactive, autonomous AI has birthed the Agentic AI Engineer. Unlike traditional prompt engineers who merely interface with chat models, Agentic AI Engineers design multi-step, autonomous workflows where AI agents can set strategic goals, execute complex tasks, and interact with external APIs with minimal human intervention. Requires deep expertise in LLMs, NLP, multi-modal architectures, and debugging network impact.</p>
                     </div>
 
-                    <!-- Role Card 2 -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
-                            <i data-lucide="cpu" class="w-6 h-6"></i>
+                    <!-- Interactive 3D Card 2 -->
+                    <div class="tilt-card interactive-el bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-xl cursor-crosshair">
+                        <div class="glow-overlay"></div>
+                        <div class="tilt-card-content relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 shadow-inner">
+                                <i data-lucide="cpu" class="w-7 h-7"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">AI Reliability & Hardware Spec.</h3>
+                            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Sits at the intersection of hardware physics and software engineering. Ensures HPC environments operate without failure during massive computational training runs.</p>
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">CMOS</span>
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">Telemetry</span>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">AI Reliability Engineer & Hardware Specialist</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400">As Google scales proprietary hardware (TPUs) to support global AI workloads, this role sits at the intersection of hardware physics and software engineering. Ensures high-performance computing (HPC) environments operate without failure. Requires intimacy with semiconductor CMOS technology, IC failure analysis, HTOL chambers, ESD protocols, and advanced data analytics.</p>
                     </div>
 
-                    <!-- Role Card 3 -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-full bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center text-cyan-600 dark:text-cyan-400 mb-4">
-                            <i data-lucide="cloud" class="w-6 h-6"></i>
+                    <!-- Interactive 3D Card 3 -->
+                    <div class="tilt-card interactive-el bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-xl cursor-crosshair">
+                        <div class="glow-overlay"></div>
+                        <div class="tilt-card-content relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-cyan-100 dark:bg-cyan-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400 mb-6 shadow-inner">
+                                <i data-lucide="cloud" class="w-7 h-7"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">Cloud Architect / SRE</h3>
+                            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Designs complex, multi-cloud platforms. SREs ("void warranties by taking things apart") ensure autonomous AI agents have correct retry mechanisms and isolation protocols.</p>
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">Kubernetes</span>
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">GCP</span>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">Cloud Architect and SRE</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400">Cloud computing remains the operational backbone of the AI revolution. Cloud Architects design complex, multi-cloud platforms. SREs ("voiding warranties by taking things apart") ensure optimal uptime using software engineering principles. Crucial for ensuring autonomous AI agents have correct retry mechanisms, timeout fallbacks, and isolation protocols.</p>
                     </div>
 
-                    <!-- Role Card 4 -->
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-                        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mb-4">
-                            <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                    <!-- Interactive 3D Card 4 -->
+                    <div class="tilt-card interactive-el bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-3xl p-8 border border-slate-200 dark:border-slate-700 shadow-xl cursor-crosshair">
+                        <div class="glow-overlay"></div>
+                        <div class="tilt-card-content relative z-10">
+                            <div class="w-14 h-14 rounded-2xl bg-red-100 dark:bg-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400 mb-6 shadow-inner">
+                                <i data-lucide="shield-alert" class="w-7 h-7"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">AI Security Analyst</h3>
+                            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Defensive AI agents to supercharge threat detection. Requires profound expertise in agentic reasoning for SIEM triage and securing multi-party computations.</p>
+                            <div class="mt-6 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">SIEM</span>
+                                <span class="px-3 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-900 rounded-full">Cryptography</span>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-bold mb-3">AI Security Analyst & Cyber Engineer</h3>
-                        <p class="text-sm text-slate-600 dark:text-slate-400">By 2026, malicious actors leverage AI to escalate cyberattacks. Google relies on defensive AI agents to supercharge threat detection. Requires profound expertise in agentic reasoning for SIEM triage, federated learning architectures, differential privacy, and securing multi-party computations against advanced model poisoning attacks.</p>
                     </div>
-                </div>
-
-                <!-- Roles Table -->
-                <div class="overflow-x-auto bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm text-left">
-                        <thead class="bg-slate-50 dark:bg-slate-900/50">
-                            <tr>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Target Role Profile</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Core Engineering Focus</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Essential Technologies & Frameworks</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Strategic Importance to Google's 2030 Vision</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium">Agentic AI Engineer</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Autonomous workflow design, Multi-agent orchestration, LLM integration</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">LangGraph, AutoGen, CrewAI, Gemini APIs, Python, Vector Databases</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Critical for transitioning Google Cloud enterprise clients from legacy software to autonomous digital ecosystems.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium">AI Reliability Engineer</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Hardware/Software optimization, TPU oversight, Failure analysis</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">IC design, Advanced Data Analytics, Python, Hardware telemetry systems</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Ensures the physical semiconductor infrastructure supporting massive AI workloads remains stable, efficient, and cost-effective.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium">Cloud Architect / SRE</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Scalable infrastructure, Distributed computing, Uptime maintenance</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">GCP, Kubernetes, Docker, Microservices, CI/CD pipelines</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Forms the fault-tolerant foundational bedrock required to host, continuously train, and deploy advanced machine learning models globally.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium">AI Security Analyst</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Threat modeling, Federated learning, Privacy-preserving computations</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">SIEM integration, Python, Differential Privacy, Cryptography</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Protects the integrity of Google's data centers and sensitive client data against automated, AI-driven cyber espionage and ransomware.</td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </section>
 
             <!-- Section 4 -->
-            <section id="roadmap" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-green/10 dark:bg-google-green/20 rounded-lg text-google-green">
-                        <i data-lucide="map" class="w-6 h-6"></i>
+            <section id="roadmap" class="scroll-mt-32 reveal">
+                <div class="flex items-center gap-4 mb-12">
+                    <div class="p-3 bg-gradient-to-br from-google-green to-green-600 rounded-xl text-white shadow-[0_0_20px_rgba(52,168,83,0.3)] animate-float" style="animation-delay: 1.5s;">
+                        <i data-lucide="git-merge" class="w-8 h-8"></i>
                     </div>
-                    <h2 class="text-3xl font-bold">The Definitive Four-Year Preparation Roadmap (2026-2030)</h2>
+                    <h2 class="text-3xl sm:text-4xl font-bold">4-Year Execution Roadmap</h2>
                 </div>
-                <p class="text-slate-600 dark:text-slate-400 mb-10">To transition from an online BCA graduate to a highly competitive Google Software Engineer by 2030, a candidate must execute a rigorously structured, multi-year developmental roadmap. This roadmap must entirely transcend theoretical academic syllabi, focusing heavily on applied computer science, advanced mathematical modeling, and production-grade system design.</p>
 
-                <!-- Timeline -->
-                <div class="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 dark:before:via-slate-700 before:to-transparent mb-16">
+                <!-- Cyber Timeline -->
+                <div class="space-y-12 relative circuit-line mb-16 pl-6 md:pl-0">
                     
                     <!-- Phase 1 -->
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-slate-950 bg-google-blue text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            1
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group interactive-el">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-slate-50 dark:border-slate-950 bg-google-blue text-white shadow-[0_0_15px_rgba(66,133,244,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 group-hover:scale-125 transition-transform">
+                            <i data-lucide="terminal" class="w-5 h-5"></i>
                         </div>
-                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <h3 class="font-bold text-lg text-google-blue mb-1">Phase 1: Algorithmic Foundations & Core CS</h3>
-                            <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3 tracking-widest uppercase">Months 1-12</div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">The absolute, non-negotiable prerequisite is an unshakeable mastery of Data Structures and Algorithms (DSA) combined with core CS fundamentals. Python is overwhelmingly recommended due to its dominance in AI.</p>
-                            <ul class="text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
-                                <li>Master advanced Python (OOP, generator expressions, decorators).</li>
-                                <li>Daily practical implementation of arrays, strings, trees, graphs, DP.</li>
-                                <li>Solve minimum 2 LeetCode problems daily ("Cracking the Coding Interview").</li>
-                                <li>Deeply understand Computer Networks (TCP/IP), DBMS (SQL/NoSQL, ACID), and OS (concurrency, multithreading).</li>
+                        <div class="w-full md:w-[calc(50%-3rem)] p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-transparent group-hover:border-google-blue/50 shadow-lg transition-colors cursor-default">
+                            <h3 class="font-bold text-2xl text-google-blue mb-2">Phase 1: Algorithmic Foundations</h3>
+                            <div class="inline-block px-3 py-1 rounded bg-slate-100 dark:bg-slate-900 text-xs font-mono text-slate-500 mb-4 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Months 01-12</div>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">Master Data Structures, Algorithms, Core CS. Python is overwhelmingly recommended due to its dominance in AI.</p>
+                            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-blue"></i> Master advanced Python (OOP, decorators).</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-blue"></i> 2 LeetCode problems daily.</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-blue"></i> TCP/IP, DBMS (SQL/NoSQL), OS concurrency.</li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- Phase 2 -->
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-slate-950 bg-google-red text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            2
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group interactive-el">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-slate-50 dark:border-slate-950 bg-google-red text-white shadow-[0_0_15px_rgba(234,67,53,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 group-hover:scale-125 transition-transform">
+                            <i data-lucide="sigma" class="w-5 h-5"></i>
                         </div>
-                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <h3 class="font-bold text-lg text-google-red mb-1">Phase 2: Mathematical Rigor for AI</h3>
-                            <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3 tracking-widest uppercase">Months 13-24</div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">Standard software programming skills are vastly insufficient. The candidate must construct a highly robust mathematical foundation, understanding the equations governing neural networks.</p>
-                            <ul class="text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
-                                <li><strong>Linear Algebra:</strong> Vector spaces, matrix multiplication, PCA, eigenvectors (critical for LLM embeddings).</li>
-                                <li><strong>Calculus:</strong> Multivariate calculus, partial derivatives, chain rule (for backpropagation).</li>
-                                <li><strong>Probability & Statistics:</strong> Distributions, Bayes' Theorem, hypothesis testing, metrics (precision/recall/F1).</li>
-                                <li>Resources: Stanford CS229, "Mathematics for Machine Learning".</li>
+                        <div class="w-full md:w-[calc(50%-3rem)] p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-transparent group-hover:border-google-red/50 shadow-lg transition-colors cursor-default">
+                            <h3 class="font-bold text-2xl text-google-red mb-2">Phase 2: Mathematical Rigor</h3>
+                            <div class="inline-block px-3 py-1 rounded bg-slate-100 dark:bg-slate-900 text-xs font-mono text-slate-500 mb-4 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Months 13-24</div>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">Construct a highly robust mathematical foundation, understanding the equations governing neural networks.</p>
+                            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-red"></i> <b>Linear Algebra:</b> Vector spaces, matrix math.</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-red"></i> <b>Calculus:</b> Partial derivatives (backpropagation).</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-red"></i> <b>Stats:</b> Bayes' Theorem, precision/recall metrics.</li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- Phase 3 -->
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-slate-950 bg-google-yellow text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            3
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group interactive-el">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-slate-50 dark:border-slate-950 bg-google-yellow text-white shadow-[0_0_15px_rgba(251,188,5,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 group-hover:scale-125 transition-transform">
+                            <i data-lucide="network" class="w-5 h-5"></i>
                         </div>
-                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <h3 class="font-bold text-lg text-yellow-600 dark:text-google-yellow mb-1">Phase 3: Agentic AI & Cloud Architecture</h3>
-                            <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3 tracking-widest uppercase">Months 25-36</div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">Pivot toward specific 2026-2030 technologies. Focus deeply on Agentic AI frameworks and multi-agent orchestration.</p>
-                            <ul class="text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
-                                <li>Production-level fluency in LangGraph, Microsoft AutoGen, and CrewAI.</li>
-                                <li>Integrate frameworks with Gemini models via function calling.</li>
-                                <li>Validate capabilities through GCP certifications (Cloud Digital Leader → ACE → Professional Cloud Architect or ML Engineer).</li>
+                        <div class="w-full md:w-[calc(50%-3rem)] p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-transparent group-hover:border-google-yellow/50 shadow-lg transition-colors cursor-default">
+                            <h3 class="font-bold text-2xl text-yellow-600 dark:text-google-yellow mb-2">Phase 3: Agentic AI & Cloud</h3>
+                            <div class="inline-block px-3 py-1 rounded bg-slate-100 dark:bg-slate-900 text-xs font-mono text-slate-500 mb-4 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Months 25-36</div>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">Pivot toward Agentic AI frameworks and validate capabilities through distributed cloud infrastructure.</p>
+                            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-yellow"></i> Fluency in LangGraph, CrewAI.</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-yellow"></i> API integration with Gemini models.</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-yellow"></i> GCP Professional Certifications.</li>
                             </ul>
                         </div>
                     </div>
 
                     <!-- Phase 4 -->
-                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-slate-950 bg-google-green text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
-                            4
+                    <div class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group interactive-el">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-slate-50 dark:border-slate-950 bg-google-green text-white shadow-[0_0_15px_rgba(52,168,83,0.6)] shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 group-hover:scale-125 transition-transform">
+                            <i data-lucide="layers" class="w-5 h-5"></i>
                         </div>
-                        <div class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <h3 class="font-bold text-lg text-google-green mb-1">Phase 4: System Design & Proof-of-Work</h3>
-                            <div class="text-xs font-semibold text-slate-400 dark:text-slate-500 mb-3 tracking-widest uppercase">Months 37-48</div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-3">Focus dramatically shifts to high-level architectural design and generating irrefutable, publicly verifiable proof-of-work.</p>
-                            <ul class="text-sm text-slate-600 dark:text-slate-400 list-disc pl-5 space-y-1">
-                                <li>Master load balancing, caching (Redis), sharding, microservices vs monoliths, API gateways.</li>
-                                <li>Build complex, production-ready projects (e.g., AI-powered alert triage with SIEM).</li>
-                                <li>Containerize with Docker, version-control with Git, deploy globally.</li>
+                        <div class="w-full md:w-[calc(50%-3rem)] p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-transparent group-hover:border-google-green/50 shadow-lg transition-colors cursor-default">
+                            <h3 class="font-bold text-2xl text-google-green mb-2">Phase 4: System Design</h3>
+                            <div class="inline-block px-3 py-1 rounded bg-slate-100 dark:bg-slate-900 text-xs font-mono text-slate-500 mb-4 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Months 37-48</div>
+                            <p class="text-slate-600 dark:text-slate-400 mb-4">High-level architectural design and the generation of irrefutable, publicly verifiable proof-of-work.</p>
+                            <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-2">
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-green"></i> Caching (Redis), sharding, microservices.</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-green"></i> Build AI-powered alert systems (SIEM).</li>
+                                <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-google-green"></i> Docker containerization & CI/CD.</li>
                             </ul>
                         </div>
                     </div>
 
                 </div>
-
-                <!-- Roadmap Summary Table -->
-                <div class="overflow-x-auto bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mt-8">
-                    <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm text-left">
-                        <thead class="bg-slate-50 dark:bg-slate-900/50">
-                            <tr>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Phase & Duration</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Core Engineering Objectives</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Key Technologies</th>
-                                <th class="px-6 py-4 font-semibold text-slate-900 dark:text-slate-200">Quantitative Success Metrics</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 dark:divide-slate-700">
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium whitespace-nowrap">Phase 1 (Mo 1-12)</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Master Data Structures, Algorithms, Core CS</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">Python, OOP, SQL, TCP/IP, OS memory</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold text-google-blue">2 LeetCode problems daily; mastering big-O.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium whitespace-nowrap">Phase 2 (Mo 13-24)</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Linear Algebra, Calculus, Advanced Statistics</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">Matrix math, Gradients, Probability distr.</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold text-google-red">Mathematically derive gradient descent from scratch.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium whitespace-nowrap">Phase 3 (Mo 25-36)</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Agentic AI Orchestration, Cloud Infrastructure</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">LangGraph, CrewAI, GCP, Docker, K8s</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold text-yellow-600 dark:text-google-yellow">Earn GCP Professional ML or Cloud Architect Cert.</td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                <td class="px-6 py-4 font-medium whitespace-nowrap">Phase 4 (Mo 37-48)</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400">Scalable System Design, Portfolio Building</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-mono text-xs">Microservices, Load Balancing, Stateful AI</td>
-                                <td class="px-6 py-4 text-slate-600 dark:text-slate-400 font-semibold text-google-green">Publish 3 production-grade AI apps on GitHub w/ CI/CD.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
             </section>
 
             <!-- Section 5 -->
-            <section id="proof-of-work" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-slate-200 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300">
-                        <i data-lucide="code-2" class="w-6 h-6"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold">Building Elite Proof-of-Work: Open Source & Startups</h2>
-                </div>
-                <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed space-y-6">
-                    <p>For an online BCA graduate, an empty resume or a lack of institutional pedigree represents the greatest barrier to securing a Google interview. To bypass the traditional campus placement system, the candidate must aggressively leverage the global open-source community and the rapidly expanding Indian startup ecosystem to build verifiable credibility.</p>
+            <section id="proof-of-work" class="scroll-mt-32 reveal">
+                <div class="bg-slate-900 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl border border-slate-800 group">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] opacity-50"></div>
                     
-                    <h3 class="text-2xl font-semibold mt-8 text-slate-900 dark:text-white">The Open Source Mandate</h3>
-                    <p>Open-source contribution is universally recognized as the purest form of technical validation. Google is deeply embedded in the open-source community, internally utilizing and maintaining massive global projects such as TensorFlow, Kubernetes, and Chromium. By actively contributing to these repositories, a candidate directly interacts with senior Google engineers, learning their rigorous code review standards, commit protocols, and documentation practices.</p>
-                    <p>The <strong>Google Summer of Code (GSoC)</strong> is a premier entry point and a highly prestigious credential. GSoC is a global program that pairs student developers with open-source organizations for an intensive 12-week programming project, providing both mentorship and a financial stipend. Acceptance into GSoC is exceptionally competitive. Even outside the formal structure of GSoC, consistently contributing to emerging 2026 open-source automation projects—such as n8n, AI agent orchestration frameworks, or Kubernetes edge deployments—will build an exceptional public engineering profile that significantly outshines a traditional academic transcript.</p>
-
-                    <h3 class="text-2xl font-semibold mt-8 text-slate-900 dark:text-white">The High-Growth Startup Accelerator</h3>
-                    <p>India's technology economy is undergoing a massive, decentralized expansion. It is pivoting rapidly from traditional IT services to AI-first startups, foundational IP creation, and enterprise SaaS. High-growth startups in technology clusters like Gurugram, Bengaluru, Pune, and emerging hubs like Karnataka's "Silicon Beach" are actively hiring entry-level talent to build their complex data and cloud infrastructures. Companies frequently operate with highly lean engineering teams. This structural reality requires engineers to function as adaptable generalists who can ship products rapidly and take extreme ownership of their codebases.</p>
-                    <p>Working in these environments provides an online BCA graduate with unparalleled, high-velocity, hands-on experience in product strategy, DevOps, and rapid algorithmic experimentation. Because startups prioritize cost-effective, highly skilled talent over academic pedigree, BCA graduates are frequently hired into roles such as Web Developers, Junior Data Analysts, and Cloud Assistants. Spending two to three years in a high-velocity Indian startup provides the exact real-world, production-level engineering context that Google recruiters actively look for in "Early Career" software engineering applicants.</p>
-                </div>
-            </section>
-
-            <!-- Section 6 -->
-            <section id="entry-pathways" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-blue/10 dark:bg-google-blue/20 rounded-lg text-google-blue">
-                        <i data-lucide="door-open" class="w-6 h-6"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold">Decoding Entry Pathways & the Interview Crucible</h2>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div class="bg-slate-100 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
-                        <h4 class="font-bold text-lg flex items-center gap-2 mb-3">
-                            <i data-lucide="briefcase" class="text-google-blue w-5 h-5"></i>
-                            Google Apprenticeship Program
-                        </h4>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Specifically designed to create inclusive pathways for individuals without traditional elite engineering degrees. This 12-24 month program offers specialized tracks in Software Dev, Data Analytics, and Cloud. Includes mentorship and a stipend (₹35K–₹37K). Application requires a highly targeted resume and solving medium-hard HackerEarth algorithmic puzzles within 90 minutes. A highly viable backdoor entry for BCA grads.</p>
-                    </div>
-                    <div class="bg-slate-100 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
-                        <h4 class="font-bold text-lg flex items-center gap-2 mb-3">
-                            <i data-lucide="rocket" class="text-google-red w-5 h-5"></i>
-                            Early Career / Uni Grad
-                        </h4>
-                        <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Off-campus hiring drives for "Software Engineer - University Graduate" and "Early Career" roles. Target candidates with a Bachelor's degree in CS or equivalent (BCA fully eligible). Commands ₹8 to ₹21 LPA. The core requirement is extreme proficiency in OOP (Java/Python/C++) and profound DSA background. Applying through the Careers portal with a strong GitHub portfolio is the objective here.</p>
-                    </div>
-                </div>
-
-                <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed space-y-6">
-                    <h3 class="text-2xl font-semibold mt-8 text-slate-900 dark:text-white">The Technical and Behavioral Interview Protocol</h3>
-                    <p>The process typically spans seven distinct rounds: an Online Assessment, two telephonic technical screens (45 minutes, easy-to-medium algorithms), and a grueling suite of five on-site interviews (four technical, one behavioral).</p>
-                    <p>Google interviewers explicitly do not seek rote memorization; they test cognitive ability to navigate ambiguity, formulate edge cases, and dynamically optimize solutions using Big-O notation. By 2026, candidates must be prepared to interact with AI-driven interview platforms in initial rounds, demanding extremely clear communication.</p>
-                    <p>For specialized ML roles (like DeepMind), expect rapid-fire mathematical trivia (derivatives, Gamma distributions) and writing Python code for gradient descent from scratch. AI ethics and dataset bias reduction are also heavily tested.</p>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-google-yellow p-6 rounded-r-xl my-6">
-                        <h4 class="font-bold text-yellow-900 dark:text-yellow-100 mb-2">"Googleyness" & The STAR Method</h4>
-                        <p class="text-yellow-800 dark:text-yellow-200 m-0 text-sm">The behavioral round assesses "Googleyness"—intellectual humility, collaboration, and emergent leadership. Candidates must prepare highly structured responses using the STAR (Situation, Task, Action, Result) framework. Anticipated questions revolve around past failures, handling difficult stakeholders, and taking unprompted technical initiative in ambiguous, highly automated environments.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Section 7 -->
-            <section id="networking" class="scroll-mt-24">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="p-2 bg-google-green/10 dark:bg-google-green/20 rounded-lg text-google-green">
-                        <i data-lucide="users" class="w-6 h-6"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold">Strategic Networking and the Referral Ecosystem</h2>
-                </div>
-                <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed space-y-6">
-                    <p>Submitting a "cold" application directly to the Google Careers portal is highly inefficient. Google relies heavily on internal tooling to parse resumes. The most statistically probable method of bypassing filters is through a direct <strong>internal referral</strong>, which acts as a powerful vote of confidence.</p>
-                    
-                    <h3 class="text-2xl font-semibold mt-8 text-slate-900 dark:text-white">Engineering a Referral Strategy via LinkedIn</h3>
-                    <p>Because an online BCA graduate may lack an inherited Big Tech network, they must systematically engineer connections. Identify Google engineers in target regions (Gurugram, Hyderabad, Bengaluru) and initiate highly personalized outreach.</p>
-                    <p>Seek brief "coffee chats" rather than demanding a referral immediately. Contextualize outreach around genuine technical curiosity (e.g., discussing a recent open-source repository or Google AI publication). If the interaction is positive and your shared technical portfolio is undeniable, the engineer may organically offer the referral.</p>
-
-                    <h3 class="text-2xl font-semibold mt-8 text-slate-900 dark:text-white">Leveraging Tech Communities and Gurugram Office Events</h3>
-                    <p>Physical presence within Google's developer ecosystem is invaluable. Global Capability Centers (GCCs) in Gurugram actively build core products. Google's Gurugram office frequently hosts Google Cloud Summits, Google Developer Group (GDG) meetups, and DevFest conferences.</p>
-                    <p>These events aggregate local Google employees, founders, and industry veterans. Actively participate in these spaces to integrate into the local technological zeitgeist. Securing entry to capacity-limited events like Google I/O Extended provides direct, face-to-face access to professionals capable of issuing referrals, offering mentorship, and alerting you to unlisted requisitions.</p>
-                </div>
-            </section>
-
-            <!-- Section 8 -->
-            <section id="synthesis" class="scroll-mt-24 mb-20">
-                <div class="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-black dark:to-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-xl relative overflow-hidden">
-                    <!-- Background graphic elements -->
-                    <div class="absolute top-0 right-0 opacity-10 pointer-events-none">
-                        <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="200" cy="200" r="199" stroke="white" stroke-width="2" stroke-dasharray="10 10"/>
-                            <circle cx="200" cy="200" r="150" stroke="white" stroke-width="1"/>
-                            <path d="M200 0V400" stroke="white" stroke-width="1" stroke-dasharray="5 5"/>
-                            <path d="M0 200H400" stroke="white" stroke-width="1" stroke-dasharray="5 5"/>
-                        </svg>
-                    </div>
-
                     <div class="relative z-10">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-sm font-semibold mb-6 backdrop-blur-md">
-                            <i data-lucide="flag" class="w-4 h-4 text-google-red"></i> The Synthesis
+                        <div class="flex items-center gap-4 mb-8">
+                            <i data-lucide="code-2" class="w-8 h-8 text-google-blue animate-pulse-fast"></i>
+                            <h2 class="text-3xl font-bold">Elite Proof-of-Work Incubation</h2>
                         </div>
-                        <h2 class="text-3xl sm:text-4xl font-bold mb-6">Strategic Synthesis & Final Recommendations</h2>
-                        <div class="space-y-6 text-slate-300 leading-relaxed text-lg">
-                            <p>Securing a software engineering or AI-focused position at Google between the years 2026 and 2030, particularly from the vantage point of an online BCA degree, is a highly achievable objective, provided the execution of the strategy is absolutely meticulous and unwavering.</p>
-                            <p>The global technology industry's rapid transition toward a skills-based economy has fundamentally dismantled the traditional, gatekept barriers of academic pedigree, replacing them with the relentless, unyielding demand for demonstrable, elite-level technical competence.</p>
-                            <p>The roadmap requires transcending conventional web development. You must achieve flawless mastery of algorithms, internalize complex mathematics underpinning AI, and become fluent in multi-agent cloud architectures. Synthesize these skills through aggressive open-source contributions, startup experience, and strategic networking. This comprehensive blueprint provides the exact mechanism required to successfully navigate the future technological labor market and secure a position at the absolute vanguard of global innovation.</p>
+                        
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl border border-slate-700 interactive-el hover:-translate-y-2 transition-transform">
+                                <h3 class="text-xl font-bold mb-3 flex items-center gap-2 text-blue-400"><i data-lucide="github"></i> Open Source Mandate</h3>
+                                <p class="text-slate-300 text-sm leading-relaxed">Active contribution to repositories like TensorFlow or Kubernetes. Target the <strong>Google Summer of Code (GSoC)</strong>. Consistently contributing to automation projects outshines a traditional academic transcript.</p>
+                            </div>
+                            <div class="bg-slate-800/80 backdrop-blur-md p-6 rounded-2xl border border-slate-700 interactive-el hover:-translate-y-2 transition-transform">
+                                <h3 class="text-xl font-bold mb-3 flex items-center gap-2 text-red-400"><i data-lucide="rocket"></i> Startup Accelerator</h3>
+                                <p class="text-slate-300 text-sm leading-relaxed">India's tech economy is pivoting to AI-first startups. Working in these lean environments (Gurugram, Bengaluru) provides high-velocity, hands-on experience in DevOps and algorithmic experimentation.</p>
+                            </div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Remaining Content Sections (Pathways, Networking, Synthesis) -->
+            <section id="entry-pathways" class="scroll-mt-32 reveal">
+                <h2 class="text-3xl font-bold mb-8 flex items-center gap-3"><i data-lucide="door-open" class="text-google-blue"></i> Entry Pathways & The Crucible</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 interactive-el">
+                        <h4 class="font-bold text-lg text-google-blue mb-2">Google Apprenticeship</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">12-24 month earn-while-you-learn model (₹35K–₹37K stipend). Highly viable backdoor entry requiring intense HackerEarth algorithmic puzzle solving.</p>
+                    </div>
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 interactive-el">
+                        <h4 class="font-bold text-lg text-google-red mb-2">Early Career Software Engineer</h4>
+                        <p class="text-sm text-slate-600 dark:text-slate-400">Requires extreme proficiency in OOP and DSA. Expect AI-driven interview platforms and rapid-fire mathematical trivia (e.g. deriving gradient descent).</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="networking" class="scroll-mt-32 reveal">
+                <h2 class="text-3xl font-bold mb-6 flex items-center gap-3"><i data-lucide="users" class="text-google-green"></i> Network Ecosystem</h2>
+                <div class="bg-white/50 dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300">
+                    <p>Submitting a "cold" application is statistically unlikely to succeed. Engineer a <strong>Referral Strategy</strong> via LinkedIn by seeking genuine technical "coffee chats" with Google engineers in target regions.</p>
+                    <p>Leverage physical events: Google's Gurugram office hosts Cloud Summits and GDG meetups. Securing entry to Google I/O Extended provides direct access to the professionals capable of issuing career-defining referrals.</p>
+                </div>
+            </section>
+
+            <!-- Final Synthesis -->
+            <section id="synthesis" class="scroll-mt-32 mb-20 reveal">
+                <div class="bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-slate-900 dark:bg-black rounded-3xl p-10 sm:p-14 text-white shadow-2xl relative overflow-hidden group">
+                    <!-- Dynamic glow effect background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-google-blue/20 via-transparent to-google-green/20 opacity-50 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                    
+                    <div class="relative z-10 text-center max-w-3xl mx-auto">
+                        <i data-lucide="fingerprint" class="w-16 h-16 mx-auto mb-6 text-google-yellow animate-pulse-fast"></i>
+                        <h2 class="text-4xl font-extrabold mb-6">Execution is Everything.</h2>
+                        <p class="text-slate-300 text-lg leading-relaxed mb-8">
+                            The tech industry's transition to a skills-based economy dismantles academic gatekeeping. Transcend conventional web development. Master algorithms, internalize AI mathematics, and architect multi-agent cloud systems. Your proof-of-work will be undeniable.
+                        </p>
+                        <button class="interactive-el px-8 py-4 bg-white text-slate-900 font-bold rounded-full hover:scale-105 hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] transition-all">
+                            Initialize Your Journey
+                        </button>
                     </div>
                 </div>
             </section>
@@ -511,83 +557,237 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500 dark:text-slate-400">
-            <p class="mb-4">Generated based on the Strategic Career Blueprint 2026-2030 document.</p>
-            <div class="flex justify-center gap-4">
-                <span class="inline-flex items-center gap-1"><i data-lucide="code" class="w-4 h-4"></i> Build</span>
-                <span class="inline-flex items-center gap-1"><i data-lucide="brain" class="w-4 h-4"></i> Learn</span>
-                <span class="inline-flex items-center gap-1"><i data-lucide="rocket" class="w-4 h-4"></i> Launch</span>
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 text-center text-slate-500 dark:text-slate-400">
+            <div class="flex justify-center gap-6 mb-4">
+                <i data-lucide="code" class="w-5 h-5 hover:text-google-blue cursor-pointer transition-colors interactive-el"></i>
+                <i data-lucide="brain" class="w-5 h-5 hover:text-google-red cursor-pointer transition-colors interactive-el"></i>
+                <i data-lucide="rocket" class="w-5 h-5 hover:text-google-yellow cursor-pointer transition-colors interactive-el"></i>
             </div>
+            <p class="text-sm font-mono tracking-widest uppercase">System Online • 2026 Ready</p>
         </div>
     </footer>
 
     <!-- Scripts -->
     <script>
-        // Initialize Lucide Icons
+        // 1. Initialize Icons
         lucide.createIcons();
 
-        // Dark Mode Toggle Logic
+        // 2. Dark Mode Toggle
         const themeToggleBtn = document.getElementById('theme-toggle');
-        
-        // Check local storage or system preference
         if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
         }
 
-        themeToggleBtn.addEventListener('click', function() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.theme = 'light';
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.theme = 'dark';
-            }
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
         });
 
-        // Reading Progress Bar
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height);
-            document.getElementById('progress-bar').style.transform = `scaleX(${scrolled})`;
+        // 3. Custom Cursor Logic
+        const dot = document.getElementById('cursor-dot');
+        const outline = document.getElementById('cursor-outline');
+        let mouseX = 0, mouseY = 0, outlineX = 0, outlineY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.top = `${mouseY}px`;
+            dot.style.left = `${mouseX}px`;
         });
 
-        // Scroll Spy for TOC
+        // Smooth outline follow
+        function animateCursor() {
+            let distX = mouseX - outlineX;
+            let distY = mouseY - outlineY;
+            outlineX += distX * 0.15;
+            outlineY += distY * 0.15;
+            outline.style.top = `${outlineY}px`;
+            outline.style.left = `${outlineX}px`;
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Cursor hover states
+        document.querySelectorAll('.interactive-el, a, button, .tilt-card').forEach(el => {
+            el.addEventListener('mouseenter', () => outline.classList.add('cursor-hover'));
+            el.addEventListener('mouseleave', () => outline.classList.remove('cursor-hover'));
+        });
+
+        // 4. Reading Progress Bar & Scroll Spy
         const sections = document.querySelectorAll('section');
         const navLinks = document.querySelectorAll('.toc-link');
 
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.3 // Trigger when 30% of the section is visible
-        };
+        window.addEventListener('scroll', () => {
+            // Progress Bar
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById('progress-bar').style.transform = `scaleX(${winScroll / height})`;
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const id = entry.target.getAttribute('id');
-                    
-                    // Remove active class from all links
-                    navLinks.forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    
-                    // Add active class to corresponding link
-                    const activeLink = document.querySelector(`.toc-link[href="#${id}"]`);
-                    if (activeLink) {
-                        activeLink.classList.add('active');
-                    }
+            // Scroll Spy
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
                 }
             });
-        }, observerOptions);
-
-        sections.forEach(section => {
-            observer.observe(section);
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
         });
+
+        // 5. Scroll Reveal Animation
+        const revealElements = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    revealObserver.unobserve(entry.target); // Run once
+                }
+            });
+        }, { threshold: 0.15, rootMargin: "0px 0px -50px 0px" });
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // 6. 3D Tilt & Glow Cards
+        const cards = document.querySelectorAll('.tilt-card');
+        cards.forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left; // x position within the element
+                const y = e.clientY - rect.top;  // y position within the element
+                
+                // Set CSS variables for the glow flashlight effect
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+
+                // Calculate tilt
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = ((y - centerY) / centerY) * -10; // Max 10 deg tilt
+                const rotateY = ((x - centerX) / centerX) * 10;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+            });
+        });
+
+        // 7. Hero Typewriter Effect
+        const textToType = "Navigating the Google Ecosystem";
+        const typewriterEl = document.getElementById('typewriter-text');
+        let typeIndex = 0;
+        
+        function typeWriter() {
+            if (typeIndex < textToType.length) {
+                typewriterEl.innerHTML += textToType.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeWriter, 50); // Speed of typing
+            }
+        }
+        setTimeout(typeWriter, 500); // Initial delay
+
+        // 8. Interactive Particle Network (Canvas)
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray = [];
+        const colors = ['#4285F4', '#EA4335', '#FBBC05', '#34A853'];
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.size > 0.2) this.size -= 0.01;
+                if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.width * canvas.height) / 15000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function handleParticles() {
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+                
+                // Draw connecting lines
+                for (let j = i; j < particlesArray.length; j++) {
+                    const dx = particlesArray[i].x - particlesArray[j].x;
+                    const dy = particlesArray[i].y - particlesArray[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Connect to mouse
+                    const mouseDx = particlesArray[i].x - mouseX;
+                    const mouseDy = particlesArray[i].y - mouseY;
+                    const mouseDistance = Math.sqrt(mouseDx * mouseDx + mouseDy * mouseDy);
+
+                    if (distance < 100) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = `rgba(100, 116, 139, ${0.1 - distance/1000})`; // Slate color
+                        if (document.documentElement.classList.contains('dark')) {
+                            ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 - distance/1000})`;
+                        }
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particlesArray[i].x, particlesArray[i].y);
+                        ctx.lineTo(particlesArray[j].x, particlesArray[j].y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+
+                    // Pull particles slightly to mouse if close
+                    if (mouseDistance < 150) {
+                        particlesArray[i].x -= mouseDx * 0.005;
+                        particlesArray[i].y -= mouseDy * 0.005;
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        });
+
+        initParticles();
+        animate();
+
     </script>
 </body>
 </html>
